@@ -54,7 +54,7 @@ class Exporter:
 
     def get_trjconvergence(self, sub_name, cup_no, speed, alpha):
         self.convergence_list = []
-        for trj in self.tree[sub_name].keys():
+        for trj in ["curve", "short", "straight", "straightdown", "claw"]:
             if int(cup_no) < 8:
                 hand = "right"
             else:
@@ -69,10 +69,10 @@ class Exporter:
                 l = self.tree[sub_name][trj][hand][cup_no][speed]
             except KeyError:
                 continue
-            upper = alpha + int(cup_no) * .1
-            lower = int(cup_no) * .1 - alpha
+            upper = (int(cup_no)) * .1
+            lower = (int(cup_no) -1) * .1
             a = self.find_convergence(l, upper, lower)
-            sub_list.append(trj)
+            a = (a-min(l[0]))/(max(l[0]) - min(l[0]))
             sub_list.append(a)
             self.convergence_list.append(sub_list)
         return self.convergence_list
@@ -94,9 +94,11 @@ class Exporter:
             except KeyError:
                 self.convergence_list.append(0)
                 continue
-            upper = alpha + int(cup_no) * .1
-            lower = int(cup_no) * .1 - alpha
+            upper = (int(cup_no)) * .1
+            lower = (int(cup_no) -1) * .1
             a = self.find_convergence(l, upper, lower)
+            adjustment = self.find_middle(l[0])
+            a = (a-adjustment)/(max(l[0]) - adjustment)
             self.convergence_list.append(a)
         return self.convergence_list
 
@@ -106,6 +108,15 @@ class Exporter:
             distance_array = l[1]
             time = self.find_timeindex(distance_array, k, j)
             return time_array[time]
+
+    def find_middle(self, l):
+        time = 0
+        for i in range(len(l)):
+            if l[i] == 0.75:
+                    time = i
+                    break
+
+        return time
 
     def find_timeindex(self, l, k, j):
         time = -1

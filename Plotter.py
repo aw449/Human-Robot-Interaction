@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
 from DataExporter import Exporter
 from matplotlib.backends.backend_pdf import PdfPages
 
-pp = PdfPages('AverageCups.pdf')
+pp = PdfPages('PercentageChangeSubj.pdf')
 a = Exporter()
 plt.isinteractive()
 # User Input here
@@ -112,10 +112,11 @@ if choice == 'cov':
 
 if choice == 'blah':
     averages = [0,0,0]
+    std_error = [0,0,0]
     for s in range(len(subj)):
         fig = plt.figure(u)
         i = 0
-        colors = ["b", "r", "c", "m", "g"]
+        colors = ["w", "r", "c", "m", "g"]
         width = .15
         names = ['5', '10', '15']
         lgd_name = []
@@ -124,30 +125,42 @@ if choice == 'blah':
 
         for t in range(len(trj)):
             cov_aggregate = [0, 0, 0]
-            five_elements = 0
-            ten_elements = 0
-            fif_elements = 0
-
+            five_cov =[]
+            ten_cov = []
+            fif_cov = []
             for c in range(len(cup)):
-                cov = a.get_spdconvergence(subj[s], cup[c], trj[t], .1)
+                cov = a.get_spdconvergence(subj[s], cup[c], trj[t], .05)
                 if cov != -1:
-                    cov_aggregate = [x+y for x, y in zip(cov, cov_aggregate)]
                     if 0 in cov:
                         index = cov.index(0)
                         if index == 0:
-                            five_elements -= 1
+                            pass
+                        else:
+                            five_cov.append(cov[0])
                         if index == 1:
-                            ten_elements -= 1
+                            pass
+                        else:
+                            ten_cov.append(cov[1])
                         if index == 2:
-                            fif_elements -= 1
-                    five_elements += 1
-                    ten_elements += 1
-                    fif_elements += 1
+                            pass
+                        else:
+                            fif_cov.append(cov[2])
+                    else:
+                        five_cov.append(cov[0])
+                        ten_cov.append(cov[1])
+                        fif_cov.append(cov[2])
+
             lgd_name.append(trj[t])
-            averages[0] = cov_aggregate[0]/five_elements
-            averages[1] = cov_aggregate[1]/ten_elements
-            averages[2] = cov_aggregate[2]/fif_elements
-            ax.bar(ind, averages, width, color=colors[i])
+
+            averages[0] = np.average(five_cov)
+            averages[1] = np.average(ten_cov)
+            averages[2] = np.average(fif_cov)
+
+            std_error[0] = np.std(five_cov)
+            std_error[1] = np.std(ten_cov)
+            std_error[2] = np.std(fif_cov)
+
+            ax.bar(ind, averages, width, color=colors[i], yerr = std_error)
             i += 1
             ind = [m+width for m in ind]
 
@@ -159,17 +172,18 @@ if choice == 'blah':
         plt.ylabel("Time")
         ax.set_title("Average Convergence Data for Subj{0}".format(subj[s]))
         axes = plt.gca()
-        axes.set_ylim([0, 20])
+        axes.set_ylim([0, 2])
         pp.savefig(fig)
     pp.close()
 
 
 if choice == 'hi':
     averages = [0,0,0]
+    std_error = [0,0,0]
     for c in range(len(cup)):
         fig = plt.figure(u)
         i = 0
-        colors = ["b", "r", "c", "m", "g"]
+        colors = ["w", "r", "c", "m", "g"]
         width = .15
         names = ['5', '10', '15']
         lgd_name = []
@@ -182,6 +196,9 @@ if choice == 'hi':
             ten_elements = 0
             fif_elements = 0
 
+            five_cov =[]
+            ten_cov = []
+            fif_cov = []
             for s in range(len(subj)):
                 cov = a.get_spdconvergence(subj[s], cup[c], trj[t], .1)
                 if cov != -1:
@@ -190,10 +207,21 @@ if choice == 'hi':
                         index = cov.index(0)
                         if index == 0:
                             five_elements -= 1
+                        else:
+                            five_cov.append(cov[0])
                         if index == 1:
                             ten_elements -= 1
+                        else:
+                            ten_cov.append(cov[1])
                         if index == 2:
                             fif_elements -= 1
+                        else:
+                            fif_cov.append(cov[2])
+
+                    else:
+                        five_cov.append(cov[0])
+                        ten_cov.append(cov[1])
+                        fif_cov.append(cov[2])
                     five_elements += 1
                     ten_elements += 1
                     fif_elements += 1
@@ -201,10 +229,16 @@ if choice == 'hi':
                 skipped = True
                 break
             lgd_name.append(trj[t])
-            averages[0] = cov_aggregate[0]/five_elements
-            averages[1] = cov_aggregate[1]/ten_elements
-            averages[2] = cov_aggregate[2]/fif_elements
-            ax.bar(ind, averages, width, color=colors[i])
+
+            averages[0] = np.average(five_cov)
+            averages[1] = np.average(ten_cov)
+            averages[2] = np.average(fif_cov)
+
+            std_error[0] = np.std(five_cov)
+            std_error[1] = np.std(ten_cov)
+            std_error[2] = np.std(fif_cov)
+
+            ax.bar(ind, averages, width, color=colors[i], yerr = std_error)
             i += 1
             ind = [m+width for m in ind]
         if not skipped:
@@ -216,19 +250,214 @@ if choice == 'hi':
             plt.ylabel("Time")
             ax.set_title("Average Convergence Data for Cup{0}".format(cup[c]))
             axes = plt.gca()
-            axes.set_ylim([0, 20])
+            axes.set_ylim([0, 2])
+            pp.savefig(fig)
+    pp.close()
+
+if choice == 'lol':
+    averages = [0,0,0]
+    plt_data = [0, 0]
+    for s in range(len(subj)):
+        fig = plt.figure(u)
+        i = 0
+        colors = ["w", "r", "c", "m", "g"]
+        width = .15
+        names = ['5', '15']
+        lgd_name = []
+        ax = fig.add_subplot(111)
+        ind = [0, 1]
+
+        for t in range(len(trj)):
+            cov_aggregate = [0, 0, 0]
+            five_cov =[]
+            ten_cov = []
+            fif_cov = []
+            for c in range(len(cup)):
+                cov = a.get_spdconvergence(subj[s], cup[c], trj[t], .05)
+                if cov != -1:
+                    if 0 in cov:
+                        index = cov.index(0)
+                        if index == 0:
+                            pass
+                        else:
+                            five_cov.append(cov[0])
+                        if index == 1:
+                            pass
+                        else:
+                            ten_cov.append(cov[1])
+                        if index == 2:
+                            pass
+                        else:
+                            fif_cov.append(cov[2])
+                    else:
+                        five_cov.append(cov[0])
+                        ten_cov.append(cov[1])
+                        fif_cov.append(cov[2])
+
+            lgd_name.append(trj[t])
+
+            averages[0] = np.average(five_cov)
+            averages[1] = np.average(ten_cov)
+            averages[2] = np.average(fif_cov)
+
+            #Calculate percentage change from 10
+            plt_data[0] = ((averages[0] - averages[1])/averages[1])*100
+            plt_data[1] = ((averages[2] - averages[1])/averages[1])*100
+            ax.bar(ind, plt_data, width, color=colors[i])
+            i += 1
+            ind = [m+width for m in ind]
+
+        u += 1
+        ind = [n-(3*width) for n in ind]
+        plt.xticks(ind, names)
+        plt.legend(lgd_name,loc = 4,prop={'size':8})
+        plt.xlabel("Speeds")
+        plt.ylabel("Percentage")
+        ax.set_title("Percentage Change Data for Subj{0}".format(subj[s]))
+        axes = plt.gca()
+        axes.set_ylim([-50, 50])
+        pp.savefig(fig)
+    pp.close()
+
+
+if choice == 'ha':
+    averages = [0,0,0]
+    plt_data = [0, 0]
+    for c in range(len(cup)):
+        fig = plt.figure(u)
+        i = 0
+        colors = ["w", "r", "c", "m", "g"]
+        width = .15
+        names = ['5', '15']
+        lgd_name = []
+        ax = fig.add_subplot(111)
+        ind = [0, 1]
+        skipped = False
+        for t in range(len(trj)):
+            cov_aggregate = [0, 0, 0]
+            five_elements = 0
+            ten_elements = 0
+            fif_elements = 0
+
+            five_cov =[]
+            ten_cov = []
+            fif_cov = []
+            for s in range(len(subj)):
+                cov = a.get_spdconvergence(subj[s], cup[c], trj[t], .1)
+                if cov != -1:
+                    cov_aggregate = [x+y for x, y in zip(cov, cov_aggregate)]
+                    if 0 in cov:
+                        index = cov.index(0)
+                        if index == 0:
+                            five_elements -= 1
+                        else:
+                            five_cov.append(cov[0])
+                        if index == 1:
+                            ten_elements -= 1
+                        else:
+                            ten_cov.append(cov[1])
+                        if index == 2:
+                            fif_elements -= 1
+                        else:
+                            fif_cov.append(cov[2])
+
+                    else:
+                        five_cov.append(cov[0])
+                        ten_cov.append(cov[1])
+                        fif_cov.append(cov[2])
+                    five_elements += 1
+                    ten_elements += 1
+                    fif_elements += 1
+            if five_elements == 0 and ten_elements == 0 and fif_elements == 0:
+                skipped = True
+                break
+            lgd_name.append(trj[t])
+
+            averages[0] = np.average(five_cov)
+            averages[1] = np.average(ten_cov)
+            averages[2] = np.average(fif_cov)
+
+            plt_data[0] = ((averages[0] - averages[1])/averages[1])*100
+            plt_data[1] = ((averages[2] - averages[1])/averages[1])*100
+            ax.bar(ind, plt_data, width, color=colors[i])
+            i += 1
+            ind = [m+width for m in ind]
+        if not skipped:
+            u += 1
+            ind = [n-(3*width) for n in ind]
+            plt.xticks(ind, names)
+            plt.legend(lgd_name,loc = 4,prop={'size':8})
+            plt.xlabel("Speeds")
+            plt.ylabel("Percentage")
+            ax.set_title("Percentage Change Data for Cup{0}".format(cup[c]))
+            axes = plt.gca()
+            axes.set_ylim([-50, 50])
             pp.savefig(fig)
     pp.close()
 
 
+if choice == 'one':
+    total = [0,0,0,0,0,0]
+    averages = [0,0,0]
+    plt_data = [0, 0]
+    for s in range(len(subj)):
+        fig = plt.figure(u)
+        i = 0
+        colors = ["w", "r", "c", "m", "g"]
+        width = .15
+        names = ['5', '15']
+        lgd_name = []
+        ax = fig.add_subplot(111)
+        ind = [0, 1]
 
+        for t in range(len(trj)):
+            cov_aggregate = [0, 0, 0]
+            five_cov =[]
+            ten_cov = []
+            fif_cov = []
+            for c in range(len(cup)):
+                cov = a.get_spdconvergence(subj[s], cup[c], trj[t], .05)
+                if cov != -1:
+                    if 0 in cov:
+                        index = cov.index(0)
+                        if index == 0:
+                            pass
+                        else:
+                            five_cov.append(cov[0])
+                        if index == 1:
+                            pass
+                        else:
+                            ten_cov.append(cov[1])
+                        if index == 2:
+                            pass
+                        else:
+                            fif_cov.append(cov[2])
+                    else:
+                        five_cov.append(cov[0])
+                        ten_cov.append(cov[1])
+                        fif_cov.append(cov[2])
 
+            lgd_name.append(trj[t])
 
+            averages[0] = np.average(five_cov)
+            averages[1] = np.average(ten_cov)
+            averages[2] = np.average(fif_cov)
 
+            #Calculate percentage change from 10
+            plt_data[0] = ((averages[0] - averages[1])/averages[1])*100
+            plt_data[1] = ((averages[2] - averages[1])/averages[1])*100
+            #ax.bar(ind, plt_data, width, color=colors[i])
+            #i += 1
+            #ind = [m+width for m in ind]
 
-
-
-
-
-
-
+        u += 1
+        ind = [n-(3*width) for n in ind]
+        plt.xticks(ind, names)
+        plt.legend(lgd_name,loc = 4,prop={'size':8})
+        plt.xlabel("Speeds")
+        plt.ylabel("Percentage")
+        ax.set_title("Percentage Change Data for Subj{0}".format(subj[s]))
+        axes = plt.gca()
+        axes.set_ylim([-50, 50])
+        pp.savefig(fig)
+    pp.close()
